@@ -1,50 +1,38 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from bisect import bisect_left as find
-import resample
-from input import initial_value as input
-
-'''
-prior_mean = 22000
-prior_sigma = 2000
-obs_values = np.array([12.84, 13.12, 12.13, 12.19, 12.67])/1000
-N_prior_samples = 1000000
-N_resample = 500000
-'''
-prior, obs_values, N_resample = input()
-
-def forward(E):
-    return 5/32*0.012*5**4/E/0.15/0.3**3
+from scipy.stats import multivariate_normal as multigauss
+import data
+from forward import forward
+from resample import resample
 
 
-def gaussin(x, sigma, mean):
-    return np.exp(-0.5*(x-mean)*(x-mean)/sigma**2)/sigma/np.sqrt(2*np.pi)
-
+prior, obs_values, N_resample = data.initprior()
 
 likelihood = np.ones(prior.size)
+sim_sample = forward(prior.sample)
 
-E_sample = np.random.normal(loc=prior.mean, scale=prior.sigma, size=prior.size)
-
-a = forward(E_sample)
-
+#for observation at same point more than once
 for j in range(prior.size):
     for i in range(len(obs_values)):
-        likelihood[j] *= gaussin(obs_values[i],
-                                 sigma=1e-3, mean=a[j])
+        likelihood[j] *= multigauss.pdf(obs_values[i],
+                                    mean=sim_sample[j], cov=1e-6)
 
 
 normalization = likelihood.sum()/prior.size
-posterior = likelihood*gaussin(E_sample, sigma=prior.sigma, mean=prior.mean)/normalization
+posterior = likelihood*multigauss.pdf(prior.sample, mean=prior.mean, cov=prior.sigma)/normalization
 
 
-E_resample = resample(E_sample,posterior,size = N_resample)
-V_resample = forward(E_resample)
-np.mean(V_resample)
+posterior_sample = resample(prior.sample, posterior, size = N_resample)
+sim_resample = forward(posterior_sample)
+mean_predict = np.mean(sim_resample)
+var_predict = prior.size/(prior.size -1) * np.var(sim_resample)
+print(posterior_sample.mean(), prior.sample.mean())
+
 
 fig, ax = plt.subplots(1, 3)
-ax[0].hist(E_sample,20)
-ax[1].hist(V_resample,50)
+ax[0].hist(prior.sample,20)
+ax[1].hist(sim_resample,50)
 #ax[1].plot(obs_values)
-ax[2].hist(E_resample,20)
+ax[2].hist(posterior_sample,20)
 fig.tight_layout()
 plt.show()

@@ -1,3 +1,4 @@
+from bisect import bisect_left as find
 from numpy import zeros
 from numpy.random import uniform 
 

@@ -6,18 +6,18 @@ from forward import forward
 from resample import resample
 ################################################################################
 
-prior_dim = 1
-prior_mean = 0.022
-prior_sigma = 0.002
-obs_values = np.array([13.84, 14.12, 13.13, 13.19, 13.67])/1000
-N_prior_samples = 80000
-N_resample = 80000
+dim = 2
+prior_mean = np.array([0.022,0.015])
+prior_sigma = np.array([[0.002, 0],[0, 0.0015]])
+obs_values = np.array([12.84, 13.12, 12.13, 12.19, 12.67])/1000
+N_prior_samples = 3000
+N_resample = 1000
 
 
-prior = data.gaussiandata(prior_dim, N_prior_samples, prior_mean, prior_sigma)
-prior.sample = np.random.normal(loc=prior.mean, scale=prior.sigma,size=prior.size)
-likelihood, sim = data.data(1,prior.size), data.data(1,prior.size)
-posterior = data.data(1,N_resample)
+prior = data.gaussiandata(dim, N_prior_samples, prior_mean, prior_sigma)
+prior.sample = prior.gen_sample()
+likelihood, sim = data.data(prior.size), data.data(prior.size)
+posterior = data.data(N_resample)
 
 sim.sample = forward(prior.sample)
 
@@ -31,7 +31,7 @@ for i in range(prior.size):
 posterior.pdfvalue = likelihood.pdfvalue*prior.pdf()#/normalization
 
 
-posterior.sample = resample(prior.sample, posterior.pdfvalue, size = N_resample)
+posterior.sample = resample(dim, prior.sample, posterior.pdfvalue, N_resample)
 sim.sample = forward(posterior.sample)
 mean_predict = np.mean(sim.sample)
 var_predict = prior.size/(prior.size -1) * np.var(sim.sample)

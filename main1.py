@@ -6,14 +6,12 @@ from forward import forward
 from resample import resample
 ################################################################################
 
-
-np.random.seed(1)
 prior_dim = 1
-prior_mean = 22000
-prior_sigma = 2000
-obs_values = np.array([13.1])/1000
-N_prior_samples = 30000
-N_resample = 10000
+prior_mean = 0.022
+prior_sigma = 0.002
+obs_values = np.array([13.84, 14.12, 13.13, 13.19, 13.67])/1000
+N_prior_samples = 80000
+N_resample = 80000
 
 
 prior = data.gaussiandata(prior_dim, N_prior_samples, prior_mean, prior_sigma)
@@ -25,12 +23,12 @@ sim.sample = forward(prior.sample)
 
 
 for i in range(prior.size):
-    likelihood.pdfvalue[i] = multigauss.logpdf(obs_values, 
+    likelihood.pdfvalue[i] = multigauss.pdf(obs_values, 
                                 mean=sim.sample[i], cov=1e-6).sum()
 
 
 #normalization = likelihood.pdfvalue.sum()/prior.size
-posterior.pdfvalue = likelihood.pdfvalue + prior.logpdf()#/normalization
+posterior.pdfvalue = likelihood.pdfvalue*prior.pdf()#/normalization
 
 
 posterior.sample = resample(prior.sample, posterior.pdfvalue, size = N_resample)

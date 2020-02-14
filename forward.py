@@ -1,2 +1,4 @@
-def forward(E, b):
-    return 5/32*0.012*5**4/1000000/E/10/b/0.3**3
+def forward(x, y):
+    for i in range(len(x)):
+        y[i] = 0.00000434/x[i,0]/x[i,1]
+    return y

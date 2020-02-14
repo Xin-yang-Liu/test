@@ -10,7 +10,7 @@ class data:
     def __init__(self, dim, size):
         self.dim = dim
         self.size = size
-        self.sample = np.zeros([dim, size])
+        self.sample = np.zeros([size, dim])
         self.pdfvalue = np.zeros(size)
     
 
@@ -20,7 +20,7 @@ class gaussiandata(data):
 
     '''
     def __init__(self, dim, size, mean, sigma):
-        super().__init__(size)
+        super().__init__(dim,size)
         self.mean = mean
         self.sigma = sigma
 
@@ -35,5 +35,8 @@ class gaussiandata(data):
         return multigauss.logpdf(self.sample, mean=self.mean, cov=self.sigma)
     
     def gen_sample(self):
-        return np.random.multivariate_normal(mean=self.mean, cov= self.sigma, size = self.size)
+        if self.dim == 1:
+            return np.random.normal(loc = self.mean, scale = self.sigma, size = self.size)
+        else:
+            return np.random.multivariate_normal(mean=self.mean, cov= self.sigma, size = self.size)
 

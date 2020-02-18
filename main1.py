@@ -10,16 +10,16 @@ from resample import resample
 regardless of the dimension of parameter of forward(parameter), the pdf of them
 shall always be 1 dimensional array
 '''
-
+#np.random.seed(1)
 #================================= input ======================================#
 
 dim_parameter = 2
 dim_data = 1
-prior_mean = np.array([0.02, 0.013])
-prior_sigma = np.array([[0.002, 0],[0, 0.0015]])
-obs_values = np.array([12.84, 13.12, 12.13, 12.19, 12.67])/1000
-N_prior_samples = 80000
-N_resample = 80000
+prior_mean = np.array([0.032, 0.013])
+prior_sigma = np.array([[0.001, 0],[0, 0.00015]])
+obs_values = np.array([9.84, 10.12, 9.13, 9.19, 9.67])/1000
+N_prior_samples = 50000
+N_resample = 50000
 
 #============================= initialization =================================#
 
@@ -29,7 +29,7 @@ likelihood, sim = data.data(dim_data, prior.size), data.data(dim_data, prior.siz
 posterior = data.data(dim_parameter, N_resample)
 
 
-sim.sample = forward(prior.sample, sim.sample)
+sim.sample = forward(prior.sample)
 
 
 for i in range(prior.size):
@@ -42,16 +42,21 @@ posterior.pdfvalue = likelihood.pdfvalue*prior.pdf()#/normalization
 
 
 posterior.sample = resample(dim_parameter, prior.sample, posterior.pdfvalue, N_resample)
-sim.sample = forward(posterior.sample, sim.sample)
+sim.sample = forward(posterior.sample)
 mean_predict = np.mean(sim.sample)
 var_predict = prior.size/(prior.size -1) * np.var(sim.sample)
-print(posterior.sample[:,0].mean(), posterior.sample[:,1].mean(), mean_predict)
+print(posterior.sample[:,0].mean(), posterior.sample[:,1].mean(), mean_predict, var_predict)
 
 
 fig, ax = plt.subplots(1, 3)
 ax[0].hist(prior.sample[:,0],20)
-ax[2].hist(sim.sample[:,0],20)
-#ax[1].plot(obs_values)
+ax[0].set_title("Prior")
 ax[1].hist(posterior.sample[:,0],20)
+ax[1].set_title("Posterior")
+ax[2].hist(sim.sample,50)
+ax[2].set_title("Predict")
+ax[2].plot(obs_values, N_resample/15*np.ones(5), 'k.')
+ax[2].plot(0.00959, N_resample/15*np.ones(1), 'r.')
+ax[2].plot([mean_predict, mean_predict], [N_resample/15,0], 'g--')
 fig.tight_layout()
 plt.show()

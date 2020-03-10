@@ -1,7 +1,7 @@
 from bisect import bisect_left as find
 import numpy as np
 
-def resample(dimension, sample, p, size):
+def resample_f(dimension, sample, p, size):
     '''
     return an array of values of a variable with the PDF of p
     

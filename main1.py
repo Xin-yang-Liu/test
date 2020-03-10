@@ -4,7 +4,7 @@ from scipy.stats import multivariate_normal as multigauss
 
 import data
 from forward import forward
-from resample import resample
+from resample import resample_f
 
 '''
 regardless of the dimension of parameter of forward(parameter), the pdf of them
@@ -18,8 +18,8 @@ dim_data = 1
 prior_mean = np.array([0.032, 0.013])
 prior_sigma = np.array([[0.001, 0],[0, 0.00015]])
 obs_values = np.array([9.84, 10.12, 9.13, 9.19, 9.67])/1000
-N_prior_samples = 50000
-N_resample = 50000
+N_prior_samples = 30000
+N_resample = 30000
 
 #============================= initialization =================================#
 
@@ -41,7 +41,7 @@ for i in range(prior.size):
 posterior.pdfvalue = likelihood.pdfvalue*prior.pdf()#/normalization
 
 
-posterior.sample = resample(dim_parameter, prior.sample, posterior.pdfvalue, N_resample)
+posterior.sample = resample_f(dim_parameter, prior.sample, posterior.pdfvalue, N_resample)
 sim.sample = forward(posterior.sample)
 mean_predict = np.mean(sim.sample)
 var_predict = prior.size/(prior.size -1) * np.var(sim.sample)
